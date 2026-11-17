@@ -9,12 +9,12 @@ not stored in the repository.
 """
 
 import html
-from datetime import datetime, timezone
 import re
 import sys
 import urllib.request
 import uuid
 import zipfile
+from datetime import UTC, datetime
 from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 
@@ -122,7 +122,7 @@ def mark_glossary(body: str) -> str:
         r"<dt>(.*?)</dt>",
         lambda m: f'<dt epub:type="glossterm" id="term-{slugify(m[1])}">{m[1]}</dt>',
         body,
-        flags=re.S,
+        flags=re.DOTALL,
     )
     return body.replace("<dd>", '<dd epub:type="glossdef">')
 
@@ -310,7 +310,10 @@ def parse_toc(index_html: str):
 
 def extract_content(doc: str) -> str:
     # Attribute values contain ">" (e.g. data-action="click->..."), so match quoted attributes explicitly.
-    start = re.search(r'<div class="content"(?:\s+[\w-]+="[^"]*")*\s*>', doc).end()
+    match = re.search(r'<div class="content"(?:\s+[\w-]+="[^"]*")*\s*>', doc)
+    if match is None:
+        raise ValueError('no <div class="content"> found; has the page layout changed?')
+    start = match.end()
     end = doc.index('<nav class="pagination', start)
     return doc[start:end]
 
@@ -318,7 +321,7 @@ def extract_content(doc: str) -> str:
 def main(out_path: str) -> None:
     if not COVER.exists():
         sys.exit(
-            f"{COVER.name} not found. Make it first with: python3 make_cover.py (see README)."
+            f"{COVER.name} not found. Make it first with: uv run make_cover.py (see README)."
         )
     first = fetch(BOOK + "/0.1-foreword").decode("utf-8")
     parts = parse_toc(first)
@@ -427,7 +430,7 @@ def main(out_path: str) -> None:
     if unmatched:
         print(f"glossary: no entry for {sorted(unmatched)}", file=sys.stderr)
 
-    built = datetime.now(timezone.utc)
+    built = datetime.now(UTC)
 
     for name, data, _ in images.values():
         files[name] = data

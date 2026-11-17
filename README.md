@@ -7,24 +7,38 @@ This is **not an official edition**. The text, images, and cover artwork belong 
 ## Quick start
 
 ```sh
-python3 make_cover.py      # once: makes cover.jpg (needs Chrome, see below)
-python3 build_epub.py      # writes shape-up.epub
+uv sync                    # once: makes .venv and installs Pillow and the developer tools
+uv run make_cover.py       # once: makes cover.jpg (needs Chrome, see below)
+uv run build_epub.py       # writes shape-up.epub
 epubcheck shape-up.epub    # optional: check the file
 ebook-viewer shape-up.epub # optional: preview it in Calibre
 ```
 
-A build takes about 30 seconds. To write the book somewhere else, give a path: `python3 build_epub.py ~/Books/shape-up.epub`.
+A build takes about 30 seconds. To write the book somewhere else, give a path: `uv run build_epub.py ~/Books/shape-up.epub`.
 
 ## Requirements
 
 | Tool | Used by | Needed for |
 | --- | --- | --- |
-| Python 3.12+ | all scripts | always |
-| [Pillow](https://python-pillow.org/) | `images.py`, `make_cover.py` | always |
+| [uv](https://docs.astral.sh/uv/) | you | installing Python, Pillow, and the developer tools |
 | Google Chrome | `make_cover.py` | making the cover |
 | `pdftoppm` (poppler-utils) | `make_cover.py` | making the cover |
 | [EPUBCheck](https://www.w3.org/publishing/epubcheck/) | you | checking the file (optional) |
 | [Calibre](https://calibre-ebook.com/) | you | previewing, sending to a device (optional) |
+
+uv reads `pyproject.toml` and installs the exact versions in `uv.lock`: Python 3.12 or newer and [Pillow](https://python-pillow.org/). If you'd rather not use uv, install Pillow yourself and run the scripts with `python3`.
+
+## Checking the code
+
+Before you commit, run:
+
+```sh
+uv run black .         # format the code
+uv run ruff check .    # find mistakes and old-style code (add --fix to repair most of them)
+uv run pyright         # check the types
+```
+
+Settings for all three are in `pyproject.toml`. To format the Markdown files, run `bunx prettier --write --prose-wrap never "**/*.md"`.
 
 ## Files
 
@@ -36,13 +50,14 @@ A build takes about 30 seconds. To write the book somewhere else, give a path: `
 | `cover.jpg` | The cover used by `build_epub.py`. Not in the repository: you make it with `make_cover.py`. |
 | `docs/considerations-for-great-epubs.md` | A checklist of what makes a good EPUB, and what this project does for each item. |
 | `LICENSE` | The MIT license for the scripts and docs in this repository. |
+| `pyproject.toml`, `uv.lock` | The project's dependencies, exact versions, and tool settings. |
 
 ## Making the cover
 
 The cover is built from Basecamp's own artwork, so it isn't stored here. Make it once before your first build:
 
 ```sh
-python3 make_cover.py            # writes cover.jpg next to the scripts
+uv run make_cover.py       # writes cover.jpg next to the scripts
 ```
 
 The script:

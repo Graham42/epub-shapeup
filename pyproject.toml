@@ -1,0 +1,29 @@
+[project]
+name = "epub-shapeup"
+version = "0.1.0"
+description = "Build an EPUB 3 of Ryan Singer's free book Shape Up for e-readers."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "pillow>=13.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.10.1",
+    "pyright>=1.1.414",
+    "ruff>=0.17.5",
+]
+
+[tool.uv]
+package = false # scripts only; nothing to build or install
+
+[tool.ruff.lint]
+extend-select = ["B"] # likely bugs, on top of Ruff's defaults
+ignore = ["E501"]     # Black handles line length
+
+[tool.pyright]
+include = ["*.py"]
+venvPath = "."
+venv = ".venv"

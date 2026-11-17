@@ -3,3 +3,4 @@
 # Made by make_cover.py from Basecamp's artwork
 cover.jpg
 __pycache__/
+.venv/

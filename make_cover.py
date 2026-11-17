@@ -29,12 +29,12 @@ def dark_rows(img: Image.Image, threshold: int = 200) -> list[float]:
     """Longest unbroken run of dark pixels in each row, as a fraction of the width."""
     g = img.convert("L")
     w, h = g.size
-    px = g.load()
+    data = g.tobytes()  # one byte per pixel in mode "L", row by row
     out = []
     for y in range(h):
         best = run = 0
-        for x in range(w):
-            run = run + 1 if px[x, y] < threshold else 0
+        for value in data[y * w : (y + 1) * w]:
+            run = run + 1 if value < threshold else 0
             best = max(best, run)
         out.append(best / w)
     return out
@@ -122,7 +122,9 @@ def main(out: str) -> None:
         tmp = Path(t)
         block, logo = title_block(tmp), basecamp_logo(tmp)
     scale = (W - 2 * MARGIN) / block.width
-    block = block.resize((W - 2 * MARGIN, round(block.height * scale)), Image.LANCZOS)
+    block = block.resize(
+        (W - 2 * MARGIN, round(block.height * scale)), Image.Resampling.LANCZOS
+    )
     cover = Image.new("RGB", (W, H), "white")
     cover.paste(block, (MARGIN, round(H * 0.16)))
     cover.paste(logo, ((W - logo.width) // 2, H - MARGIN - logo.height))
