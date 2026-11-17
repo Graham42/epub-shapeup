@@ -4,7 +4,8 @@
 Usage: python3 build_epub.py [output.epub]
 Requires Pillow; image processing lives in images.py next to this script (PNGs are flattened onto white for
 dark-mode readers, animations become a still frame plus a link to the web page).
-Run make_cover.py first to create cover.jpg next to this script.
+Run make_cover.py first to create cover.jpg next to this script. The cover is Basecamp's artwork, so it is
+not stored in the repository.
 """
 import html
 from datetime import datetime, timezone
@@ -290,6 +291,8 @@ def extract_content(doc: str) -> str:
 
 
 def main(out_path: str) -> None:
+    if not COVER.exists():
+        sys.exit(f"{COVER.name} not found. Make it first with: python3 make_cover.py (see README).")
     first = fetch(BOOK + "/0.1-foreword").decode("utf-8")
     parts = parse_toc(first)
     slugs = {s for _, chs in parts for s, _, _ in chs}

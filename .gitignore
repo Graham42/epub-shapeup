@@ -1,3 +1,5 @@
 # Build output (contains the copyrighted book)
 *.epub
+# Made by make_cover.py from Basecamp's artwork
+cover.jpg
 __pycache__/
