@@ -7,6 +7,7 @@ dark-mode readers, animations become a still frame plus a link to the web page).
 Run make_cover.py first to create cover.jpg next to this script. The cover is Basecamp's artwork, so it is
 not stored in the repository.
 """
+
 import html
 from datetime import datetime, timezone
 import re
@@ -76,7 +77,9 @@ a.term { color: inherit; text-decoration: underline dotted; }
 
 
 def fetch(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (epub-builder)"})
+    req = urllib.request.Request(
+        url, headers={"User-Agent": "Mozilla/5.0 (epub-builder)"}
+    )
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read()
 
@@ -86,7 +89,9 @@ def slug_of(path: str) -> str:
 
 
 def slugify(text: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", html.unescape(re.sub("<[^>]+>", "", text)).lower()).strip("-")
+    return re.sub(
+        r"[^a-z0-9]+", "-", html.unescape(re.sub("<[^>]+>", "", text)).lower()
+    ).strip("-")
 
 
 def semantics(slug: str, title: str) -> tuple[str, str]:
@@ -113,12 +118,18 @@ def section(kind: str, body: str) -> str:
 
 def mark_glossary(body: str) -> str:
     """Tag glossary terms and definitions, giving each term a stable id."""
-    body = re.sub(r"<dt>(.*?)</dt>", lambda m: f'<dt epub:type="glossterm" id="term-{slugify(m[1])}">{m[1]}</dt>',
-                  body, flags=re.S)
+    body = re.sub(
+        r"<dt>(.*?)</dt>",
+        lambda m: f'<dt epub:type="glossterm" id="term-{slugify(m[1])}">{m[1]}</dt>',
+        body,
+        flags=re.S,
+    )
     return body.replace("<dd>", '<dd epub:type="glossdef">')
 
 
-def link_terms(body: str, glossary_file: str, term_ids: dict[str, str]) -> tuple[str, set[str]]:
+def link_terms(
+    body: str, glossary_file: str, term_ids: dict[str, str]
+) -> tuple[str, set[str]]:
     """Turn term markers into glossary links. Returns the new body and marker texts with no glossary entry.
 
     Markers don't always match the glossary headword ("scope" -> "Scopes", "raw idea" -> "Raw ideas",
@@ -151,7 +162,9 @@ def link_terms(body: str, glossary_file: str, term_ids: dict[str, str]) -> tuple
 class Xhtmlizer(HTMLParser):
     """Re-serialize a web-book HTML fragment as clean XHTML, downloading images."""
 
-    def __init__(self, slug: str, slugs: set[str], images: dict[str, tuple[str, bytes, bool]]):
+    def __init__(
+        self, slug: str, slugs: set[str], images: dict[str, tuple[str, bytes, bool]]
+    ):
         super().__init__(convert_charrefs=True)
         self.slug, self.slugs, self.images = slug, slugs, images
         self.out: list[str] = []
@@ -179,8 +192,10 @@ class Xhtmlizer(HTMLParser):
             return f"<img{self._attrs(a.items())}/>"
         a["alt"] = "Still image from an animation. " + a["alt"]
         web = f"{BOOK}/{self.slug}" + (f"#{self.section}" if self.section else "")
-        return (f'<img{self._attrs(a.items())} class="animation"/>'
-                f'<a class="web-link" href="{html.escape(web, quote=True)}">Watch the animation online</a>')
+        return (
+            f'<img{self._attrs(a.items())} class="animation"/>'
+            f'<a class="web-link" href="{html.escape(web, quote=True)}">Watch the animation online</a>'
+        )
 
     def _void(self, tag: str, attrs) -> str:
         return self._img(attrs) if tag == "img" else f"<{tag}{self._attrs(attrs)}/>"
@@ -197,7 +212,11 @@ class Xhtmlizer(HTMLParser):
                 data, suffix = still_frame(data), ".png"
             elif suffix == ".png":
                 data = flatten(data)
-            self.images[url] = (f"images/{len(self.images):03d}{suffix}", data, animated)
+            self.images[url] = (
+                f"images/{len(self.images):03d}{suffix}",
+                data,
+                animated,
+            )
         name, _, animated = self.images[url]
         return "../" + name, animated
 
@@ -269,7 +288,7 @@ def page(title: str, body: str, matter: str = "") -> str:
 
 def parse_toc(index_html: str):
     """Return [(part_title, [(slug, chapter_number_label, title), ...]), ...] from the sidebar TOC."""
-    toc_html = index_html[index_html.index('<div class="toc">'):]
+    toc_html = index_html[index_html.index('<div class="toc">') :]
     parts = []
     for block in re.split(r'<div class="toc__part">', toc_html)[1:]:
         pt = re.search(r'toc__part-title[^"]*"[^>]*>([^<]+)<', block)
@@ -278,7 +297,13 @@ def parse_toc(index_html: str):
             num = re.search(r'toc__chapter-number">([^<]+)<', li)
             link = re.search(r'toc__chapter-title"><a href="([^"]+)">([^<]+)<', li)
             if link:
-                chapters.append((slug_of(link.group(1)), html.unescape(num.group(1)) if num else "", html.unescape(link.group(2))))
+                chapters.append(
+                    (
+                        slug_of(link.group(1)),
+                        html.unescape(num.group(1)) if num else "",
+                        html.unescape(link.group(2)),
+                    )
+                )
         parts.append((html.unescape(pt.group(1)) if pt else "", chapters))
     return parts
 
@@ -292,14 +317,23 @@ def extract_content(doc: str) -> str:
 
 def main(out_path: str) -> None:
     if not COVER.exists():
-        sys.exit(f"{COVER.name} not found. Make it first with: python3 make_cover.py (see README).")
+        sys.exit(
+            f"{COVER.name} not found. Make it first with: python3 make_cover.py (see README)."
+        )
     first = fetch(BOOK + "/0.1-foreword").decode("utf-8")
     parts = parse_toc(first)
     slugs = {s for _, chs in parts for s, _, _ in chs}
     images: dict[str, tuple[str, bytes, bool]] = {}
     files: dict[str, bytes] = {}
-    spine: list[str] = ["text/cover.xhtml", "text/titlepage.xhtml", "text/copyright.xhtml", "text/nav.xhtml"]
-    first_of: dict[str, str] = {}  # section type -> first slug of that type, for landmarks
+    spine: list[str] = [
+        "text/cover.xhtml",
+        "text/titlepage.xhtml",
+        "text/copyright.xhtml",
+        "text/nav.xhtml",
+    ]
+    first_of: dict[str, str] = (
+        {}
+    )  # section type -> first slug of that type, for landmarks
     nav_items: list[str] = []
     ncx_points: list[str] = []
     order = 0
@@ -307,8 +341,10 @@ def main(out_path: str) -> None:
     def ncx(label: str, src: str, children: str = "") -> str:
         nonlocal order
         order += 1
-        return (f'<navPoint id="np{order}" playOrder="{order}"><navLabel><text>{html.escape(label)}</text></navLabel>'
-                f'<content src="{src}"/>{children}</navPoint>')
+        return (
+            f'<navPoint id="np{order}" playOrder="{order}"><navLabel><text>{html.escape(label)}</text></navLabel>'
+            f'<content src="{src}"/>{children}</navPoint>'
+        )
 
     for pi, (part_title, chapters) in enumerate(parts):
         chapter_nav, chapter_ncx = [], []
@@ -317,7 +353,9 @@ def main(out_path: str) -> None:
             part_file = f"text/part-{pi}.xhtml"
             matter = semantics(chapters[0][0], chapters[0][2])[0]
             heading = f'<h1 class="part" id="title">{html.escape(part_title)}</h1>'
-            files[part_file] = page(part_title, section("part", heading), matter).encode()
+            files[part_file] = page(
+                part_title, section("part", heading), matter
+            ).encode()
             spine.append(part_file)
         for slug, num, title in chapters:
             print(f"fetching {slug}", file=sys.stderr)
@@ -328,21 +366,41 @@ def main(out_path: str) -> None:
             matter, kind = semantics(slug, title)
             first_of.setdefault(kind, slug)
             # Image-only paragraphs get a class so the stylesheet can keep them whole (epubcheck rejects :has()).
-            body = re.sub(r"<p>(\s*<img [^>]*/>\s*)</p>", r'<p class="image">\1</p>', conv.result())
+            body = re.sub(
+                r"<p>(\s*<img [^>]*/>\s*)</p>",
+                r'<p class="image">\1</p>',
+                conv.result(),
+            )
             if kind == "glossary":
                 body = mark_glossary(body)
-            head = (f'<p class="masthead">{html.escape(num)}</p>' if num else "") + f'<h1 id="title">{html.escape(title)}</h1>'
+            head = (
+                f'<p class="masthead">{html.escape(num)}</p>' if num else ""
+            ) + f'<h1 id="title">{html.escape(title)}</h1>'
             fname = f"text/{slug}.xhtml"
-            files[fname] = page(title, section(kind, head + "\n" + body), matter).encode()
+            files[fname] = page(
+                title, section(kind, head + "\n" + body), matter
+            ).encode()
             spine.append(fname)
             label = f"{num}: {title}" if num else title
             sections = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', files[fname].decode())
-            sec_nav = "".join(f'<li><a href="{slug}.xhtml#{sid}">{re.sub("<[^>]+>", "", t)}</a></li>' for sid, t in sections)
-            chapter_nav.append(f'<li><a href="{slug}.xhtml">{html.escape(label)}</a>' + (f"<ol>{sec_nav}</ol>" if sec_nav else "") + "</li>")
-            sec_ncx = "".join(ncx(html.unescape(re.sub("<[^>]+>", "", t)), f"text/{slug}.xhtml#{sid}") for sid, t in sections)
+            sec_nav = "".join(
+                f'<li><a href="{slug}.xhtml#{sid}">{re.sub("<[^>]+>", "", t)}</a></li>'
+                for sid, t in sections
+            )
+            chapter_nav.append(
+                f'<li><a href="{slug}.xhtml">{html.escape(label)}</a>'
+                + (f"<ol>{sec_nav}</ol>" if sec_nav else "")
+                + "</li>"
+            )
+            sec_ncx = "".join(
+                ncx(html.unescape(re.sub("<[^>]+>", "", t)), f"text/{slug}.xhtml#{sid}")
+                for sid, t in sections
+            )
             chapter_ncx.append(ncx(label, f"text/{slug}.xhtml", sec_ncx))
         if part_file:
-            nav_items.append(f'<li><a href="part-{pi}.xhtml">{html.escape(part_title)}</a><ol>{"".join(chapter_nav)}</ol></li>')
+            nav_items.append(
+                f'<li><a href="part-{pi}.xhtml">{html.escape(part_title)}</a><ol>{"".join(chapter_nav)}</ol></li>'
+            )
             ncx_points.append(ncx(part_title, part_file, "".join(chapter_ncx)))
         else:
             nav_items.extend(chapter_nav)
@@ -350,10 +408,19 @@ def main(out_path: str) -> None:
 
     glossary_file = f'{first_of["glossary"]}.xhtml'
     glossary = files["text/" + glossary_file].decode()
-    term_ids = {html.unescape(t).lower(): i for i, t in re.findall(r'<dt epub:type="glossterm" id="([^"]+)">(.*?)</dt>', glossary)}
+    term_ids = {
+        html.unescape(t).lower(): i
+        for i, t in re.findall(
+            r'<dt epub:type="glossterm" id="([^"]+)">(.*?)</dt>', glossary
+        )
+    }
     unmatched: set[str] = set()
     for name in spine:
-        if name.startswith("text/") and name in files and name != "text/" + glossary_file:
+        if (
+            name.startswith("text/")
+            and name in files
+            and name != "text/" + glossary_file
+        ):
             body, missing = link_terms(files[name].decode(), glossary_file, term_ids)
             files[name] = body.encode()
             unmatched |= missing
@@ -421,13 +488,26 @@ def main(out_path: str) -> None:
         f'<navMap>{"".join(ncx_points)}</navMap></ncx>'
     ).encode()
 
-    media = {".xhtml": "application/xhtml+xml", ".css": "text/css", ".jpeg": "image/jpeg", ".jpg": "image/jpeg",
-             ".png": "image/png", ".gif": "image/gif", ".svg": "image/svg+xml", ".ncx": "application/x-dtbncx+xml"}
+    media = {
+        ".xhtml": "application/xhtml+xml",
+        ".css": "text/css",
+        ".jpeg": "image/jpeg",
+        ".jpg": "image/jpeg",
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".svg": "image/svg+xml",
+        ".ncx": "application/x-dtbncx+xml",
+    }
     ids = {name: f"f{i}" for i, name in enumerate(files)}
     manifest = []
     for name in files:
-        props = {"text/nav.xhtml": ' properties="nav"', "images/cover.jpeg": ' properties="cover-image"'}.get(name, "")
-        manifest.append(f'<item id="{ids[name]}" href="{name}" media-type="{media[PurePosixPath(name).suffix]}"{props}/>')
+        props = {
+            "text/nav.xhtml": ' properties="nav"',
+            "images/cover.jpeg": ' properties="cover-image"',
+        }.get(name, "")
+        manifest.append(
+            f'<item id="{ids[name]}" href="{name}" media-type="{media[PurePosixPath(name).suffix]}"{props}/>'
+        )
     spine_xml = "".join(f'<itemref idref="{ids[n]}"/>' for n in spine)
     guide = (
         '<guide><reference type="cover" title="Cover" href="text/cover.xhtml"/>'
@@ -450,16 +530,16 @@ def main(out_path: str) -> None:
         '<meta refines="#author" property="file-as">Singer, Ryan</meta>'
         '<dc:contributor id="foreword">Jason Fried</dc:contributor>'
         '<meta refines="#foreword" property="role" scheme="marc:relators">aui</meta>'
-        '<dc:language>en</dc:language><dc:publisher>Basecamp</dc:publisher>'
+        "<dc:language>en</dc:language><dc:publisher>Basecamp</dc:publisher>"
         # Web edition announced 2019-07-10: https://signalvnoise.com/svn3/announcing-shape-up-a-deep-dive-into-how-we-work/
-        '<dc:date>2019-07-10</dc:date>'
-        '<dc:description>Shape Up will help you break free of “best practices” that aren’t really working, '
-        'think deeper about the right problems, and start shipping meaningful projects your team can celebrate.'
-        '</dc:description>'
-        '<dc:subject>Software development</dc:subject><dc:subject>Product management</dc:subject>'
-        '<dc:subject>Project management</dc:subject>'
-        '<dc:rights>Copyright © 37signals LLC. All rights reserved.</dc:rights>'
-        f'<dc:source>{BOOK}</dc:source>'
+        "<dc:date>2019-07-10</dc:date>"
+        "<dc:description>Shape Up will help you break free of “best practices” that aren’t really working, "
+        "think deeper about the right problems, and start shipping meaningful projects your team can celebrate."
+        "</dc:description>"
+        "<dc:subject>Software development</dc:subject><dc:subject>Product management</dc:subject>"
+        "<dc:subject>Project management</dc:subject>"
+        "<dc:rights>Copyright © 37signals LLC. All rights reserved.</dc:rights>"
+        f"<dc:source>{BOOK}</dc:source>"
         f'<meta property="dcterms:modified">{built:%Y-%m-%dT%H:%M:%SZ}</meta>'
         # EPUB Accessibility 1.1 discovery metadata. No dcterms:conformsTo: that claim needs an audit (e.g. DAISY Ace).
         '<meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">visual</meta>'
@@ -483,12 +563,21 @@ def main(out_path: str) -> None:
         '<rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>'
     )
     with zipfile.ZipFile(out_path, "w") as z:
-        z.writestr(zipfile.ZipInfo("mimetype"), "application/epub+zip", compress_type=zipfile.ZIP_STORED)
-        z.writestr("META-INF/container.xml", container, compress_type=zipfile.ZIP_DEFLATED)
+        z.writestr(
+            zipfile.ZipInfo("mimetype"),
+            "application/epub+zip",
+            compress_type=zipfile.ZIP_STORED,
+        )
+        z.writestr(
+            "META-INF/container.xml", container, compress_type=zipfile.ZIP_DEFLATED
+        )
         z.writestr("OEBPS/content.opf", opf, compress_type=zipfile.ZIP_DEFLATED)
         for name, data in files.items():
             z.writestr("OEBPS/" + name, data, compress_type=zipfile.ZIP_DEFLATED)
-    print(f"wrote {out_path}: {len(spine)} spine items, {len(images)} images", file=sys.stderr)
+    print(
+        f"wrote {out_path}: {len(spine)} spine items, {len(images)} images",
+        file=sys.stderr,
+    )
 
 
 if __name__ == "__main__":

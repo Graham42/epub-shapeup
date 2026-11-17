@@ -7,6 +7,7 @@ PDF title page at the bottom.
 
 Needs: google-chrome, pdftoppm (poppler-utils), Pillow. Usage: python3 make_cover.py [cover.jpg]
 """
+
 import subprocess
 import sys
 import tempfile
@@ -18,7 +19,10 @@ from PIL import Image, ImageOps
 W, H = 1600, 2400
 MARGIN = 150
 SCALE = 4  # Chrome device scale factor
-VIEW_W, VIEW_H = 800, 700  # CSS pixels; this width gives the stacked (sketch over title) layout
+VIEW_W, VIEW_H = (
+    800,
+    700,
+)  # CSS pixels; this width gives the stacked (sketch over title) layout
 
 
 def dark_rows(img: Image.Image, threshold: int = 200) -> list[float]:
@@ -52,10 +56,22 @@ def segments(fractions: list[float]) -> list[tuple[int, int, float]]:
 
 def title_block(tmp: Path) -> Image.Image:
     shot = tmp / "page.png"
-    subprocess.run(["google-chrome", "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                    f"--force-device-scale-factor={SCALE}", "--virtual-time-budget=8000",
-                    f"--window-size={VIEW_W},{VIEW_H}", f"--screenshot={shot}", "https://basecamp.com/shapeup"],
-                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(
+        [
+            "google-chrome",
+            "--headless=new",
+            "--disable-gpu",
+            "--hide-scrollbars",
+            f"--force-device-scale-factor={SCALE}",
+            "--virtual-time-budget=8000",
+            f"--window-size={VIEW_W},{VIEW_H}",
+            f"--screenshot={shot}",
+            "https://basecamp.com/shapeup",
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     page = Image.open(shot).convert("RGB")
     # The "← Basecamp.com" link sits left of the content column; keep only the column.
     col = page.crop((int(page.width * 0.32), 0, page.width, page.height))
@@ -70,10 +86,30 @@ def title_block(tmp: Path) -> Image.Image:
 
 def basecamp_logo(tmp: Path) -> Image.Image:
     pdf = tmp / "shape-up.pdf"
-    req = urllib.request.Request("https://basecamp.com/shapeup/shape-up.pdf", headers={"User-Agent": "Mozilla/5.0"})
+    req = urllib.request.Request(
+        "https://basecamp.com/shapeup/shape-up.pdf",
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
     pdf.write_bytes(urllib.request.urlopen(req, timeout=60).read())
-    subprocess.run(["pdftoppm", "-f", "1", "-l", "1", "-singlefile", "-scale-to-x", str(W), "-scale-to-y", str(H),
-                    "-png", str(pdf), str(tmp / "title")], check=True, stderr=subprocess.DEVNULL)
+    subprocess.run(
+        [
+            "pdftoppm",
+            "-f",
+            "1",
+            "-l",
+            "1",
+            "-singlefile",
+            "-scale-to-x",
+            str(W),
+            "-scale-to-y",
+            str(H),
+            "-png",
+            str(pdf),
+            str(tmp / "title"),
+        ],
+        check=True,
+        stderr=subprocess.DEVNULL,
+    )
     title = Image.open(tmp / "title.png").convert("RGB")
     segs = segments(dark_rows(title))
     s, e, _ = segs[-1]  # the logo is the last ink on the page

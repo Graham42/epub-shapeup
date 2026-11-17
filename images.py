@@ -52,7 +52,9 @@ def _encode_on_white(rgba: Image.Image, info: dict) -> bytes:
     The ICC profile is kept only for RGB output, since the sources carry RGB profiles
     that would be invalid on a grayscale PNG.
     """
-    rgb = Image.alpha_composite(Image.new("RGBA", rgba.size, WHITE), rgba).convert("RGB")
+    rgb = Image.alpha_composite(Image.new("RGBA", rgba.size, WHITE), rgba).convert(
+        "RGB"
+    )
     params = {"dpi": info["dpi"]} if "dpi" in info else {}
     if _is_gray(rgb):
         out = rgb.convert("L")
@@ -68,4 +70,7 @@ def _encode_on_white(rgba: Image.Image, info: dict) -> bytes:
 def _is_gray(rgb: Image.Image) -> bool:
     """True if every pixel has R == G == B, so conversion to 'L' is lossless."""
     r, g, b = rgb.split()
-    return ImageChops.difference(r, g).getbbox() is None and ImageChops.difference(g, b).getbbox() is None
+    return (
+        ImageChops.difference(r, g).getbbox() is None
+        and ImageChops.difference(g, b).getbbox() is None
+    )

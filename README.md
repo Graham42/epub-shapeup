@@ -1,6 +1,6 @@
 # Shape Up EPUB builder
 
-Builds an EPUB 3 e-book of [*Shape Up*](https://basecamp.com/shapeup) by Ryan Singer from the free web edition, for reading on an e-reader (made for an Onyx Boox).
+Builds an EPUB 3 e-book of [_Shape Up_](https://basecamp.com/shapeup) by Ryan Singer from the free web edition, for reading on an e-reader (made for an Onyx Boox).
 
 This is **not an official edition**. The text, images, and cover artwork belong to 37signals LLC. The scripts download them from basecamp.com each time you build. This repository does not include the book or the cover image. See [Credits and licenses](#credits-and-licenses).
 
@@ -18,7 +18,7 @@ A build takes about 30 seconds. To write the book somewhere else, give a path: `
 ## Requirements
 
 | Tool | Used by | Needed for |
-|---|---|---|
+| --- | --- | --- |
 | Python 3.12+ | all scripts | always |
 | [Pillow](https://python-pillow.org/) | `images.py`, `make_cover.py` | always |
 | Google Chrome | `make_cover.py` | making the cover |
@@ -29,7 +29,7 @@ A build takes about 30 seconds. To write the book somewhere else, give a path: `
 ## Files
 
 | File | What it does |
-|---|---|
+| --- | --- |
 | `build_epub.py` | Downloads every chapter and image, cleans the HTML, and packs the EPUB. |
 | `images.py` | Gives see-through PNGs a white background, and turns animations into one still image. |
 | `make_cover.py` | Makes `cover.jpg` from the title graphic on the web edition's home page. |
@@ -85,7 +85,7 @@ For the full checklist behind these steps, with what was done and what was left 
 
 ### The book
 
-[*Shape Up: Stop Running in Circles and Ship Work that Matters*](https://basecamp.com/shapeup) is by **Ryan Singer**, with a foreword by **Jason Fried**. It is published free online by **[Basecamp](https://basecamp.com/)**. Copyright © 37signals LLC. All rights reserved.
+[_Shape Up: Stop Running in Circles and Ship Work that Matters_](https://basecamp.com/shapeup) is by **Ryan Singer**, with a foreword by **Jason Fried**. It is published free online by **[Basecamp](https://basecamp.com/)**. Copyright © 37signals LLC. All rights reserved.
 
 The text, illustrations, diagrams, and image descriptions all come from the web edition. The cover is made from the web edition's title artwork and the Basecamp logo from the official PDF. None of these are in this repository, and none are covered by this repository's license. If you build the EPUB, it is for your own reading. Please don't share it. Point people to [basecamp.com/shapeup](https://basecamp.com/shapeup) instead.
 
