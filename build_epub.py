@@ -25,33 +25,52 @@ VOID = {"img", "br", "hr", "wbr", "source", "col"}
 DROP = {"template", "svg", "button", "script", "style", "noscript"}
 KEEP_ATTRS = {"id", "href", "src", "alt", "colspan", "rowspan", "start"}
 
+# Readers apply these rules unevenly and let the user override fonts and spacing, so the stylesheet only adds
+# structure. The CSS 2 `page-break-*` names come before their CSS 3 `break-*` equivalents for older engines.
 CSS = """\
-body { font-family: serif; line-height: 1.45; margin: 0 4%; }
-h1 { font-size: 1.6em; margin: 1.5em 0 0.2em; }
+body { font-family: serif; line-height: 1.45; margin: 0 4%; widows: 2; orphans: 2; }
+p, li, dd, figcaption, blockquote { -webkit-hyphens: auto; hyphens: auto; }
+
+/* Headings: never hyphenated, never split, never left alone at the bottom of a page. */
+h1, h2, h3, .masthead { -webkit-hyphens: none; hyphens: none; text-align: left;
+  page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+h1 { font-size: 1.6em; margin: 3em 0 1.2em; }
+.masthead + h1 { margin-top: 0.2em; }
 h2 { font-size: 1.25em; margin: 1.6em 0 0.4em; }
-h3 { font-size: 1.1em; }
-.masthead { font-variant: small-caps; letter-spacing: 0.05em; margin-top: 2em; }
-.part { text-align: center; margin-top: 30%; }
-.cover { text-align: center; margin: 0; padding: 0; }
-.cover img { max-height: 100%; }
-img { max-width: 100%; height: auto; }
-p > img:only-child { display: block; margin: 1em auto; }
-blockquote { margin: 1em 1.5em; font-style: italic; }
+h3 { font-size: 1.1em; margin: 1.3em 0 0.3em; }
+.masthead { font-variant: small-caps; letter-spacing: 0.05em; margin: 3em 0 0; }
+h1 + p, h2 + p, h3 + p { page-break-before: avoid; break-before: avoid; }
+
+/* Images: keep each one whole and on the same page as its caption; tall ones shrink to fit the screen. */
+img { max-width: 100%; max-height: 95vh; height: auto; }
+p.image img, figure img { display: block; margin: 0 auto; }
+p.image { margin: 1.2em 0; text-indent: 0; page-break-inside: avoid; break-inside: avoid; }
+figure { margin: 1.2em 0; text-align: center; page-break-inside: avoid; break-inside: avoid; }
+figcaption { font-size: 0.9em; margin-top: 0.4em; page-break-before: avoid; break-before: avoid; }
+img.animation { margin: 1.2em auto 0.3em; }
+.web-link { display: block; text-align: center; font-size: 0.9em; page-break-before: avoid; break-before: avoid; }
+
+blockquote { margin: 1em 1.5em; font-style: italic; page-break-inside: avoid; break-inside: avoid; }
+table { border-collapse: collapse; page-break-inside: avoid; break-inside: avoid; }
+td, th { border: 1px solid #888; padding: 0.2em 0.4em; }
+
+/* Glossary: a term always sits on the same page as its definition. */
+dt { font-weight: bold; margin-top: 0.9em; page-break-after: avoid; break-after: avoid; }
+dd { margin: 0.2em 0 0 1.5em; page-break-before: avoid; break-before: avoid; }
 .term { font-style: italic; }
 a.term { color: inherit; text-decoration: underline dotted; }
+
+/* Front matter and part pages. */
+.cover { text-align: center; margin: 0; padding: 0; }
+.cover img { max-height: 100vh; }
+.part { text-align: center; margin-top: 30%; }
 .titlepage { text-align: center; margin-top: 25%; }
-.titlepage h1 { font-size: 2.4em; margin-bottom: 0.2em; }
+.titlepage h1 { font-size: 2.4em; margin-bottom: 0.2em; text-align: center; }
 .titlepage .subtitle { font-size: 1.3em; margin-top: 0; }
 .titlepage .author { margin-top: 2em; font-size: 1.2em; }
 .titlepage .publisher { margin-top: 4em; font-variant: small-caps; letter-spacing: 0.05em; }
 .copyright { font-size: 0.9em; margin-top: 2em; }
 .copyright p { margin: 0 0 0.8em; }
-figure { margin: 1em 0; text-align: center; }
-figcaption { font-size: 0.9em; }
-table { border-collapse: collapse; }
-td, th { border: 1px solid #888; padding: 0.2em 0.4em; }
-img.animation { display: block; margin: 1em auto 0.3em; }
-.web-link { display: block; text-align: center; font-size: 0.9em; }
 """
 
 
@@ -305,7 +324,8 @@ def main(out_path: str) -> None:
             conv.close()
             matter, kind = semantics(slug, title)
             first_of.setdefault(kind, slug)
-            body = conv.result()
+            # Image-only paragraphs get a class so the stylesheet can keep them whole (epubcheck rejects :has()).
+            body = re.sub(r"<p>(\s*<img [^>]*/>\s*)</p>", r'<p class="image">\1</p>', conv.result())
             if kind == "glossary":
                 body = mark_glossary(body)
             head = (f'<p class="masthead">{html.escape(num)}</p>' if num else "") + f'<h1 id="title">{html.escape(title)}</h1>'
