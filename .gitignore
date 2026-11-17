@@ -1,0 +1,3 @@
+# Build output (contains the copyrighted book)
+*.epub
+__pycache__/
