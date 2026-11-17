@@ -49,6 +49,7 @@ A build takes about 30 seconds. To write the book somewhere else, give a path: `
 - **Boox:** copy `shape-up.epub` into the `Books` folder over USB, or upload it with BooxDrop. NeoReader opens EPUB directly.
 - **Kobo:** for better page counts and reading stats, convert it first: `ebook-convert shape-up.epub shape-up.kepub`.
 - **Kindle:** upload the EPUB with Send to Kindle.
+- **Readwise:** sign in at [readwise.io/books/upload](https://readwise.io/books/upload/) and upload the EPUB to your library, then read it in the Readwise app.
 
 ## Known limits
 
