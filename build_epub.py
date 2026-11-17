@@ -30,7 +30,9 @@ KEEP_ATTRS = {"id", "href", "src", "alt", "colspan", "rowspan", "start"}
 # Readers apply these rules unevenly and let the user override fonts and spacing, so the stylesheet only adds
 # structure. The CSS 2 `page-break-*` names come before their CSS 3 `break-*` equivalents for older engines.
 CSS = """\
-body { font-family: serif; line-height: 1.45; margin: 0 4%; widows: 2; orphans: 2; }
+body { font-family: serif; line-height: 1.45; margin: 0 4%; widows: 2; orphans: 2; text-align: left; }
+/* Left-aligned, not justified. Set on the text elements too: some readers justify `p` unless the book says otherwise. */
+p, li, dd, blockquote { text-align: left; }
 p, li, dd, figcaption, blockquote { -webkit-hyphens: auto; hyphens: auto; }
 
 /* Headings: never hyphenated, never split, never left alone at the bottom of a page. */
@@ -67,7 +69,8 @@ a.term { color: inherit; text-decoration: underline dotted; }
 .cover img { max-height: 100vh; }
 .part { text-align: center; margin-top: 30%; }
 .titlepage { text-align: center; margin-top: 25%; }
-.titlepage h1 { font-size: 2.4em; margin-bottom: 0.2em; text-align: center; }
+.titlepage h1, .titlepage p { text-align: center; }
+.titlepage h1 { font-size: 2.4em; margin-bottom: 0.2em; }
 .titlepage .subtitle { font-size: 1.3em; margin-top: 0; }
 .titlepage .author { margin-top: 2em; font-size: 1.2em; }
 .titlepage .publisher { margin-top: 4em; font-variant: small-caps; letter-spacing: 0.05em; }

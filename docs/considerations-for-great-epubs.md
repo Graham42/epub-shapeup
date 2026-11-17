@@ -56,6 +56,7 @@ A checklist for turning a free web or PDF book into an EPUB that reads well on a
 | **Keep headings with their text** | A heading alone at the bottom of a page is confusing. | ✅ |
 | **Keep images with their captions** | A caption on the next page is hard to match to its image. | ✅ |
 | **Avoid single stray lines** | One line of a paragraph alone at the top or bottom of a page (widows and orphans). | ✅ |
+| **Choose the text alignment** | If the book doesn't set one, many readers justify text. On a narrow screen that can leave wide gaps between words. Left-aligned text is easier for many people to read. | ✅ Left-aligned. |
 | **Hyphenate body text** | Gives more even lines on a narrow screen. Never hyphenate headings. | ✅ |
 | **Let the reader choose fonts and spacing** | People set their e-reader the way they like. The stylesheet should add structure, not force a look. | ✅ |
 | **Don't embed licensed fonts** | Many fonts, including the web edition's FF Meta Serif, need a paid licence. | ⛔ Left out. |
