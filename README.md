@@ -34,6 +34,7 @@ A build takes about 30 seconds. To write the book somewhere else, give a path: `
 | `images.py` | Gives see-through PNGs a white background, and turns animations into one still image. |
 | `make_cover.py` | Makes `cover.jpg` from the title graphic on the web edition's home page. |
 | `cover.jpg` | The cover used by `build_epub.py`. It is saved in the repository so a normal build doesn't need Chrome. |
+| `docs/considerations-for-great-epubs.md` | A checklist of what makes a good EPUB, and what this project does for each item. |
 
 ## What the build does
 
@@ -43,6 +44,9 @@ A build takes about 30 seconds. To write the book somewhere else, give a path: `
 4. **Fixes images.** All images stay at full quality. Images with see-through backgrounds get a white background, so they don't disappear in dark mode. The animated Hill Chart becomes its final still image, with a "Watch the animation online" link.
 5. **Adds structure.** Each file is tagged as a foreword, chapter, part, appendix, or glossary, for readers and screen readers. The book also has landmarks, a nested table of contents, and an older-style table of contents (NCX) for older readers.
 6. **Adds front pages and metadata.** It adds a title page and a copyright page that says where the book came from and what was changed. It also fills in the author, date, description, and accessibility information.
+7. **Lays out pages.** The stylesheet keeps headings with their text, images with their captions, and glossary terms with their definitions. It hyphenates body text, and leaves fonts and spacing to the reader.
+
+For the full checklist behind these steps, with what was done and what was left out, see [Considerations for great EPUBs](docs/considerations-for-great-epubs.md).
 
 ## Putting it on an e-reader
 
